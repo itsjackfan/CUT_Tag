@@ -1,20 +1,22 @@
 ################### CUT&TAG DATA ANALYSIS MODULE #################
 
-install.packages("rlist")
-install.packages("DiffBind")
-install.packages("ChIPQC")
-  if (!requireNamespace("BiocManager", quietly = TRUE))
-  install.packages("BiocManager")
-  BiocManager::install("ChIPQC")
+# install.packages("rlist")
+# install.packages("DiffBind")
+# install.packages("ChIPQC")
+# if (!requireNamespace("BiocManager", quietly = TRUE)) {
+#   install.packages("BiocManager",dependencies=TRUE)
+# }
 
+# BiocManager::install()
+# BiocManager::install("Matrix", force=TRUE,dependencies=TRUE)
+# BiocManager::install("ChIPQC", force=TRUE, dependencies=TRUE)
 
 library(ChIPQC)
-
 library(DiffBind)
 library(rlist)
 
 # set and go to outputs folder
-setwd("E:/recovered/Bin_folder/shp_work/CTN/projects/2_setd1a/chip-seq/cut&tag_R/outputs")
+setwd("C:\\Users\\Jack Fan\\Documents\\R\\CUT_Tag\\outputs")
 
 
 # read in samples
