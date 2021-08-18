@@ -11,6 +11,15 @@
 # BiocManager::install("Matrix", force=TRUE,dependencies=TRUE)
 # BiocManager::install("ChIPQC", force=TRUE, dependencies=TRUE)
 
+# ChIPQC need following code to work
+# https://www.biostars.org/p/357154
+
+library("BiocParallel")
+register(DoparParam())
+registered()
+bpparam("SerialParam")
+
+library("TxDb.Hsapiens.UCSC.hg38.knownGene")
 library(ChIPQC)
 library(DiffBind)
 library(rlist)
@@ -20,11 +29,11 @@ setwd("C:\\Users\\Jack Fan\\Documents\\R\\CUT_Tag\\outputs")
 
 
 # read in samples
-test <- dba(sampleSheet='E:\\recovered\\Bin_folder\\shp_work\\CTN\\projects\\2_setd1a\\chip-seq\\cut&tag_R\\inputs\\sub_samples_win.txt')
+test <- dba(sampleSheet='C:\\Users\\Jack Fan\\Documents\\R\\CUT_Tag\\inputs\\subsamples.txt')
 test
 
 pdf("raw_heatmapPlot.pdf")
-#png("raw_heatmapPlot.png")
+# png("raw_heatmapPlot.png")
 plot(test)
 dev.off()
 
@@ -37,7 +46,7 @@ test_counts <- dba.count(test)
 test_counts
 list.save(test_counts,'test.rds')
 
-
+# test_counts <- readRDS('test.rds')
 
 # FRiP, which stands for Fraction of Reads in Peaks, indicates which samples show more enrichment overall
 info <- dba.show(test_counts)
@@ -73,12 +82,57 @@ test_counts_norm <- dba.analyze(test_counts_norm, method=DBA_ALL_METHODS)
 dba.show(test_counts_norm, bContrasts=T)	
 
 require(rlist)
-list.save(diffbind_test.DB,'diffbind_test.DB.rds')
+list.save(test_counts_norm,'test_counts_norm.rds') # fixed error from diffbind_test.DB to test_counts_norm
 
-# Get result for a given contrast and a given test
+# test_counts_norm <- readRDS('test_counts_norm.rds')
+
+## Plot results with DiffBind methods
+# MA plot
+pdf("MAplot.pdf")
+dba.plotMA(test_counts_norm)
+dev.off()
+
+# volcano plot
+pdf("volcanoPlot.pdf")
+dba.plotVolcano(test_counts_norm)
+dev.off()
+
+# box plot
+pdf("boxPlot.pdf")
+dba.plotBox(test_counts_norm)
+dev.off()
+
+pvals <- dba.plotBox(test_counts_norm)
+pvals
+
+# normalized heatmap, no special params
+pdf("norm_heatmapPlot.pdf")
+dba.plotHeatmap(test_counts_norm) # special params? contrast, correlations, scale, colScheme
+dev.off()
+
+# profile plots, need profileplyr to work ==> throws patchworkGrob version error #####
+# profile plot, default (separate)
+  # library(devtools)
+  # devtools::install_github("thomasp85/patchwork") # redundant patchwork packages, make sure to install from github
+  # install.packages("profileplyr", dependencies=TRUE) # make sure to setRepositories()
+
+library(profileplyr)
+
+pdf("profilePlot.pdf")
+dba.plotProfile(test_counts_norm)
+dev.off()
+
+# profile plot, merged 
+
+pdf("profilePlotMerged.pdf")
+dba.plotProfile(test_counts_norm, merge=c(DBA_CONTROL))
+dev.off()
+
+# DBA significance analysis #####
+
+## Frameshift/control contrast:
 res_deseq <- dba.report(test_counts_norm, method=DBA_DESEQ2, contrast = 1, th=1)
 head(res_deseq)
-
 
 library("dplyr")
 # Write to file
@@ -91,44 +145,60 @@ fs_enrich <- out %>% filter(FDR < 0.05 & Fold > 0) #%>% select(seqnames, start, 
 # Write to file
 write.table(fs_enrich, file="fs_enriched.txt", sep="\t", quote=F, row.names=F, col.names=F)
 
+## Splicing/control contrast:
+sp_deseq <- dba.report(test_counts_norm, method=DBA_DESEQ2, contrast = 2, th=1) # contrast numbers found with line 76
+head(sp_deseq)
+
+# File writing
+sp_out <- as.data.frame(spl_deseq)
+write.table(sp_out, file="sp_cntrl_deseq2_out.txt", sep="\t", quote=F, row.names=F)
+
+# Filtering for significance into bed files
+sp_enrich <- sp_out %>% filter(FDR < 0.05 & Fold > 0) 
+
+#  Final file write
+write.table(sp_enrich, file="sp_enriched.txt", sep="\t", quote=F, row.names=F, col.names=F)
+
+## Frameshift/splicing contrast:
+fssp_deseq <- dba.report
 
 #################### Annotation ###################
-install.packages("ChIPseeker")
-install.packages("TxDb.Hsapiens.UCSC.hg38.knownGene")
-install.packages("clusterProfiler")
-install.packages("org.Hs.eg.db")
-install.packages("DOSE")
-
-library("TxDb.Hsapiens.UCSC.hg38.knownGene")
-library("ChIPseeker")
-library("clusterProfiler") 
-library("org.Hs.eg.db") 
-library("DOSE")
-library(ChIPpeakAnno)
-
-gr1 <- toGRanges(fs_enrich, format="BED", header=FALSE)
-
-## loading Annotation packages
-annoData <- toGRanges(TxDb.Hsapiens.UCSC.hg38.knownGene, feature="gene")
-
-annotatedPeak <- annotatePeakInBatch(gr1, AnnotationData = annoData)
-
-
-peaks_entrez_id = annotatedPeak$feature
-# save to disk
-write.csv(peaks_entrez_id,file="GREAT_inputs.csv")
-# use GREAT websites to annotate
-
-
-library(org.Hs.eg.db)
-over <- getEnrichedGO(peaks_entrez_id, orgAnn="org.Hs.eg.db",
-                      feature_id_type = "entrez_id",
-                      maxP=0.01, minGOterm=10, 
-                      multiAdjMethod="BH",
-                      condense=FALSE)
-head(over[["bp"]][, -3])
-head(over[["cc"]][, -3])
-head(over[["mf"]][, -3])
+# install.packages("ChIPseeker")
+# install.packages("TxDb.Hsapiens.UCSC.hg38.knownGene")
+# install.packages("clusterProfiler")
+# install.packages("org.Hs.eg.db")
+# install.packages("DOSE")
+# 
+# # library("TxDb.Hsapiens.UCSC.hg38.knownGene")
+# # library("ChIPseeker")
+# # library("clusterProfiler")
+# # library("org.Hs.eg.db")
+# # library("DOSE")
+# # library(ChIPpeakAnno)
+# 
+# gr1 <- toGRanges(fs_enrich, format="BED", header=FALSE)
+# 
+# ## loading Annotation packages
+# annoData <- toGRanges(TxDb.Hsapiens.UCSC.hg38.knownGene, feature="gene")
+# 
+# annotatedPeak <- annotatePeakInBatch(gr1, AnnotationData = annoData)
+# 
+# 
+# peaks_entrez_id = annotatedPeak$feature
+# # save to disk
+# write.csv(peaks_entrez_id,file="GREAT_inputs.csv")
+# # use GREAT websites to annotate
+# 
+# 
+# library(org.Hs.eg.db)
+# over <- getEnrichedGO(peaks_entrez_id, orgAnn="org.Hs.eg.db",
+#                       feature_id_type = "entrez_id",
+#                       maxP=0.01, minGOterm=10,
+#                       multiAdjMethod="BH",
+#                       condense=FALSE)
+# head(over[["bp"]][, -3])
+# head(over[["cc"]][, -3])
+# head(over[["mf"]][, -3])
 
 
 
