@@ -159,8 +159,6 @@ sp_enrich <- sp_out %>% filter(FDR < 0.05 & Fold > 0)
 #  Final file write
 write.table(sp_enrich, file="sp_enriched.txt", sep="\t", quote=F, row.names=F, col.names=F)
 
-## Frameshift/splicing contrast:
-fssp_deseq <- dba.report
 
 #################### Annotation ###################
 # install.packages("ChIPseeker")
