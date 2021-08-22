@@ -10,7 +10,7 @@ cut_tag_analysis <- function(projectDir, subSampleFile, plots=FALSE, plotTypes=N
   analysis(analysisFile = tc_norm, outputFileName = "cntrl_sp_deseq2_out", contrast = 2, bFlip = TRUE)
   
   if (plots == TRUE) {
-    dataplots(tc_norm,plotTypes,DBA_CONTROL)
+    dataplots(tc_norm,plotTypes,pvals=TRUE)
   }
 }
 
@@ -25,6 +25,7 @@ environ_prep <- function(projectDir) {
   library(ChIPQC)
   library("TxDb.Hsapiens.UCSC.hg38.knownGene")
   library(dplyr)
+  library(profileplyr)
   
   ifelse(!dir.exists(file.path(projectDir,"outputs")), dir.create(file.path(projectDir,"outputs")), FALSE)
 }
@@ -62,7 +63,7 @@ analysis <- function(analysisFile, outputFileName, contrast, bFlip=FALSE) {
   write.table(enrich, file=paste(outputFileName,"_enriched.txt",sep=""),sep="\t",quote=F,row.names=F)
 }
 
-dataplots <- function(data, plots = "all", pvals = FALSE, profmerges = NULL) {
+dataplots <- function(data, plots = "all", pvals = FALSE) {
   if ("all" %in% plots) {
     plotMA(data)
     plotVolcano(data)
@@ -121,9 +122,9 @@ plotProfS <- function(data) {
   dev.off()
 }
 
-plotProfM <- function(data, merges) {
+plotProfM <- function(data) {
   pdf("profilePlotMerged.pdf")
-  dba.plotProfile(test_counts_norm, merge = merges)
+  dba.plotProfile(data, merge = DBA_CONTROL)
   dev.off()
 }
 
@@ -135,3 +136,4 @@ plotPCA <- function(data) {
 #####
 
 cut_tag_analysis('C:\\Users\\Jack Fan\\Documents\\R\\CUT_Tag','C:\\Users\\Jack Fan\\Documents\\R\\CUT_Tag\\inputs\\subsamples.txt',TRUE,"all")
+

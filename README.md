@@ -30,7 +30,6 @@ There is 1 central function with various sub-functions that are used to carry ou
   **-** `data`: string, The name of the file or object that is to be plotted. This is generally the `test_counts_norm` object from the `info_reading` function, though it may be another object that has not been normalized with `dba.normalize`.    
   **-** `plots`: string or vector of strings, All types of plots that should be included in the final output. Includes `MA`, `volcano`, `box`,`heatmap`,`profplotS`,`profplotM`, or `all` if all plots are desired. A separate function for PCA plots is included due to the difference in datasets. Defaults to `all`.    
   **-** `pvals`: boolean, Whether or not the pvals of the boxplot are to be saved to a separate object named `pvals`. Defaults to false.    
-  **-** `profmerges`: string or vector of strings, All merges that the merged profile plot is to take into account. Defaults to null.    
     
   There are also 7 separate functions that are provided for each of the plot types:    
   `plotMA`  A function used to generate an MA plot based on the given `data` object.       
@@ -38,5 +37,5 @@ There is 1 central function with various sub-functions that are used to carry ou
   `plotBox` A function used to generate a box plot based on the given `data` object. Optional inclusion to save the p-values to a variable named `pvals`.      
   `plotHeatmap` A function used to generate a heatmap based on the given `data` object.      
   `plotProfS` A function used to generate a separate profile plot based on the given `data` object.    
-  `plotProfM` A function used to generate a merged profile plot based on the given `data` object while merging by the given `merges` condition(s).     
+  `plotProfM` A function used to generate a merged profile plot based on the given `data` object.     
   `plotPCA` A function used to generate a count-based PCA plot based on the given `data` object. NOTE: This is the only plot function that uses non-normalized, count-based data.     
