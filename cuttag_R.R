@@ -11,9 +11,6 @@
 # BiocManager::install("Matrix", force=TRUE,dependencies=TRUE)
 # BiocManager::install("ChIPQC", force=TRUE, dependencies=TRUE)
 
-# ChIPQC need following code to work
-# https://www.biostars.org/p/357154
-
 library("BiocParallel")
 register(DoparParam())
 registered()
@@ -26,7 +23,6 @@ library(rlist)
 
 # set and go to outputs folder
 setwd("C:\\Users\\Jack Fan\\Documents\\R\\CUT_Tag\\outputs")
-
 
 # read in samples
 test <- dba(sampleSheet='C:\\Users\\Jack Fan\\Documents\\R\\CUT_Tag\\inputs\\subsamples.txt')
