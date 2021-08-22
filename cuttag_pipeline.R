@@ -62,26 +62,26 @@ analysis <- function(analysisFile, outputFileName, contrast, bFlip=FALSE) {
   write.table(enrich, file=paste(outputFileName,"_enriched.txt",sep=""),sep="\t",quote=F,row.names=F)
 }
 
-dataplots <- function(data, plots = "all", profmerges = NULL) {
-  if ("MA" %in% plots) {
+dataplots <- function(data, plots = "all", pvals = FALSE, profmerges = NULL) {
+  if ("all" %in% plots) {
+    plotMA(data)
+    plotVolcano(data)
+    plotBox(data)
+    plotHeatmap(data)
+    plotProfS(data)
+    plotProfM(data)
+  } else if ("MA" %in% plots) {
     plotMA(data)
   } else if ("volcano" %in% plots) {
     plotVolcano(data)
   } else if ("box" %in% plots) {
-    plotBox(data)
+    plotBox(data, pvals = pvals)
   } else if ("heatmap" %in% plots) {
     plotHeatmap(data)
   } else if ("profplotS" %in% plots) {
     plotProfS(data)
   } else if ("profplotM" %in% plots) {
-    plotProfM(data)
-  } else if ("all" %in% plots) {
-    plotMA(data)
-    plotVolcano(data)
-    plotBox(data)
-    plotHeatmap(data)
-    plotProfS(data)
-    plotProfM(data)
+    plotProfM(data, profmerges)
   }
 }
 
@@ -124,6 +124,12 @@ plotProfS <- function(data) {
 plotProfM <- function(data, merges) {
   pdf("profilePlotMerged.pdf")
   dba.plotProfile(test_counts_norm, merge = merges)
+  dev.off()
+}
+
+plotPCA <- function(data) {
+  pdf("PCAplot_counted.pdf")
+  dba.plotPCA(data,DBA_CONDITION,label=DBA_REPLICATE)
   dev.off()
 }
 #####
