@@ -2,7 +2,7 @@
 
 cut_tag_analysis <- function(projectDir, subSampleFile, plots=FALSE, plotTypes=NULL) {
   environ_prep(projectDir)
-  info_reading(subsampleFile)
+  info_reading(subSampleFile)
   
   tc_norm <- readRDS('test_counts_norm.rds')
   
@@ -27,7 +27,8 @@ environ_prep <- function(projectDir) {
   library(dplyr)
   library(profileplyr)
   
-  ifelse(!dir.exists(file.path(projectDir,"outputs")), dir.create(file.path(projectDir,"outputs")), FALSE)
+  outputDir <- paste(projectDir,"outputs",sep="_")
+  dir.create(file.path(projectDir, outputDir), FALSE)
 }
 
 info_reading <- function(subsampleFile) {
@@ -59,7 +60,7 @@ analysis <- function(analysisFile, outputFileName, contrast, bFlip=FALSE) {
   out <- as.data.frame(res_deseq)
   write.table(out, file=paste(outputFileName,".txt",sep=""), sep="\t",quote=F, row.names=F)
   
-  enrich <- out %>% filter(FDR < 0.05 & Fold > 0)
+  enrich <- out %>% filter(FDR < 0.05 & Fold > 0) # Fold > 0 ==> more in control vs. cases
   write.table(enrich, file=paste(outputFileName,"_enriched.txt",sep=""),sep="\t",quote=F,row.names=F)
 }
 
@@ -135,5 +136,5 @@ plotPCA <- function(data) {
 }
 #####
 
-cut_tag_analysis('C:\\Users\\Jack Fan\\Documents\\R\\CUT_Tag','C:\\Users\\Jack Fan\\Documents\\R\\CUT_Tag\\inputs\\subsamples.txt',TRUE,"all")
+cut_tag_analysis(projectDir='C:\\Users\\Jack Fan\\Documents\\R\\CUT_Tag',subSampleFile='C:\\Users\\Jack Fan\\Documents\\R\\CUT_Tag\\inputs\\subsamples.txt',TRUE,"all")
 
